@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config>
+  <!-- Bot token -->
+  <Token>YourSecretToken</Token>
+  <TokenType>Bot</TokenType>
+  
+  <!-- Guild and channel (name or id) -->
+  <Guild>YourGuildName</Guild>
+  <Channel>YourVoiceChannelName</Channel>
+  
+  <!-- Shuffle the playlist -->
+  <Shuffle>false</Shuffle>
+  
+  <!-- Default music volume -->
+  <Volume>10</Volume>
+  
+  <!-- Music directories -->
+  <Directories>
+    <Directory>C:\Users\Username\Music\</Directory>
+  </Directories>
+  
+  <!-- All users allowed to control the bot (name or id) -->
+  <AllowedUsers>
+    <AllowedUser>Admin#xxxx</AllowedUser>
+  </AllowedUsers>
+</Config>
