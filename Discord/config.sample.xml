@@ -10,6 +10,9 @@
   
   <!-- Shuffle the playlist -->
   <Shuffle>false</Shuffle>
+
+  <!-- Starts the playback when the bot joins -->
+  <Autoplay>true</Autoplay>
   
   <!-- Default music volume -->
   <Volume>10</Volume>
