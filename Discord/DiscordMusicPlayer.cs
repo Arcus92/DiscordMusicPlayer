@@ -568,6 +568,7 @@ namespace DiscordMusicPlayer
                     builder.AppendLine("play <title>            - Plays the track with the given title.");
                     builder.AppendLine("stop                    - Stops the playback.");
                     builder.AppendLine("next                    - Skips the current track and plays the next title on the playlist.");
+                    builder.AppendLine("volume                  - Gets the current volume.");
                     builder.AppendLine("volume <volume>         - Sets the volume (0 - 100).");
                     builder.AppendLine("join <channel>          - Joins the audio channel on the current guild.");
                     builder.AppendLine("join <guild> <channel>  - Joins the audio channel on the given guild.");
