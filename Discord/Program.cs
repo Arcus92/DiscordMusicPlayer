@@ -1,5 +1,6 @@
 ﻿using DiscordMusicPlayer.CommandSystem;
 using System;
+using System.Reflection;
 
 namespace DiscordMusicPlayer
 {
@@ -12,6 +13,16 @@ namespace DiscordMusicPlayer
         /// The current discord music player
         /// </summary>
         private static DiscordMusicPlayer m_DiscordMusicPlayer;
+
+        /// <summary>
+        /// Gets the application name
+        /// </summary>
+        public const string ApplicationName = "Discord-Music-Player";
+
+        /// <summary>
+        /// Gets the application version
+        /// </summary>
+        public static readonly Version ApplicationVersion = Assembly.GetEntryAssembly().GetName().Version;
 
         /// <summary>
         /// The application entry point
@@ -27,8 +38,9 @@ namespace DiscordMusicPlayer
 
             // Header
             Logger.Log("Program", "-------------------------------------");
-            Logger.Log("Program", "Discord-Music-Player by David Schulte");
+            Logger.Log("Program", "{0} - {1}", ApplicationName, ApplicationVersion);
             Logger.Log("Program", "-------------------------------------");
+            Logger.Log("Program", "Type <help> for a list of all commands.");
             Logger.Log("Program", "Type <exit> to close the program.");
             Logger.Log("Program", "Starting...");
 
@@ -83,7 +95,7 @@ namespace DiscordMusicPlayer
             }
             else Logger.Log("Playlist", "{0} music files found!", playlist.Count);
 
-            // Shuffel the music
+            // Shuffle the music
             if (settings.Shuffle) playlist.Shuffle();
 
 

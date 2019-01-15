@@ -8,7 +8,7 @@ using System.Xml;
 namespace DiscordMusicPlayer
 {
     /// <summary>
-    /// Ds 2017-06-25: The settings class
+    /// DS 2017-06-25: The settings class
     /// </summary>
     internal class Settings
     {

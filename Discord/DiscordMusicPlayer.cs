@@ -4,6 +4,7 @@ using DiscordMusicPlayer.CommandSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -76,13 +77,8 @@ namespace DiscordMusicPlayer
         /// <param name=""></param>
         public async Task Connect()
         {
-            // Creates the discord
-            m_Client = new DiscordSocketClient(new DiscordSocketConfig() {
-                // If your platform doesn't have native websockets,
-                // add Discord.Net.Providers.WS4Net from NuGet,
-                // add the `using` at the top, and uncomment this line:
-                //WebSocketProvider = WS4NetProvider.Instance,
-            });
+            // Creates the discord client
+            m_Client = new DiscordSocketClient(new DiscordSocketConfig());
 
             // Add the event
             m_Client.MessageReceived += OnMessageReceived;
@@ -92,7 +88,7 @@ namespace DiscordMusicPlayer
             m_Client.Log += OnLogMessage;
             m_Client.GuildAvailable += OnGuildAvailable;
 
-            // Creates the taks completion handler
+            // Creates the task completion handler
             m_TaskWaiterReady = new TaskCompletionSource<bool>();
 
             // Login
@@ -149,7 +145,7 @@ namespace DiscordMusicPlayer
         }
 
         /// <summary>
-        /// An audio channel was joind
+        /// An audio channel was joined
         /// </summary>
         private void OnAudioChannelJoined()
         {
@@ -380,7 +376,7 @@ namespace DiscordMusicPlayer
         }
 
         /// <summary>
-        /// A private message was recived
+        /// A private message was received
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -395,7 +391,7 @@ namespace DiscordMusicPlayer
                 // Log
                 Logger.Log("Chat", "{0}: {1}", e.Author.ToString(), e.Content);
 
-                // Todo: Some clever admin protection
+                // TODO: Some clever admin protection
                 if (IsUserInList(AllowedUsers, e.Author))
                 {
                     // Parse the command
@@ -423,7 +419,7 @@ namespace DiscordMusicPlayer
             if (users.Contains(user.Id.ToString()))
                 return true;
 
-            // Than the username (with #xxxx)
+            // Than the usernames (with #xxxx)
             if (users.Contains(user.ToString()))
                 return true;
 
@@ -444,8 +440,10 @@ namespace DiscordMusicPlayer
             // Ignore
             if (command.IsEmpty) return;
 
+            StringBuilder builder;
+
             // Select the command name
-            switch(command.Name.ToLower())
+            switch (command.Name.ToLower())
             {
                 // Skip
                 case "next":
@@ -486,9 +484,13 @@ namespace DiscordMusicPlayer
                             }
                             else // More
                             {
-                                StringBuilder builder = new StringBuilder();
+                                builder = new StringBuilder();
 
                                 builder.AppendLine("Please select:");
+
+                                // Starts a code block if markdown is supported
+                                if (output.SupportMarkdown)
+                                    builder.AppendLine("```");
 
                                 int c = 0;
                                 foreach(var musicFile in musicFiles)
@@ -501,6 +503,10 @@ namespace DiscordMusicPlayer
                                         break; }
                                 }
 
+                                // Ends the code block if markdown is supported
+                                if (output.SupportMarkdown)
+                                    builder.AppendLine("```");
+
                                 await output.SendAsync(builder.ToString());
                             }
                         }
@@ -510,15 +516,24 @@ namespace DiscordMusicPlayer
                 // Change the volume
                 case "volume":
                     int val;
-                    if (int.TryParse(command.Argument, out val))
+                    // There is no argument
+                    if (string.IsNullOrEmpty(command.Argument))
                     {
-                        if (val < 0 || val > 100)
+                        // Return the current volume
+                        await output.SendAsync(string.Format("The volume is currently at {0}%.", Math.Round(m_MusicPlayer.Volume * 100)));
+                    }
+                    else
+                    {
+                        if (int.TryParse(command.Argument, out val))
                         {
-                            break;
-                        }
+                            if (val < 0 || val > 100)
+                            {
+                                break;
+                            }
 
-                        // Sets the volume
-                        m_MusicPlayer.Volume = val / 100f;
+                            // Sets the volume
+                            m_MusicPlayer.Volume = val / 100f;
+                        }
                     }
                     break;
 
@@ -536,6 +551,61 @@ namespace DiscordMusicPlayer
                     {
                         await output.SendAsync("Please enter a channel name or id: join [<guild name or id>] <channel name or id>");
                     }
+                    break;
+
+                // Prints a list of all commands
+                case "help":
+                    // Builds the text
+                    builder = new StringBuilder();
+
+                    builder.AppendLine("You can use the following commands:");
+
+                    // Starts a code block if markdown is supported
+                    if (output.SupportMarkdown)
+                        builder.AppendLine("```");
+
+                    builder.AppendLine("play                    - Resumes the playback of the current track.");
+                    builder.AppendLine("play <title>            - Plays the track with the given title.");
+                    builder.AppendLine("stop                    - Stops the playback.");
+                    builder.AppendLine("next                    - Skips the current track and plays the next title on the playlist.");
+                    builder.AppendLine("volume <volume>         - Sets the volume (0 - 100).");
+                    builder.AppendLine("join <channel>          - Joins the audio channel on the current guild.");
+                    builder.AppendLine("join <guild> <channel>  - Joins the audio channel on the given guild.");
+                    builder.AppendLine("help                    - Shows this useful message.");
+                    builder.AppendLine("info                    - Shows the version number and links to the creators homepage.");
+                    builder.AppendLine("exit                    - Closes the application. This can only be used in console mode!");
+
+                    // Ends the code block if markdown is supported
+                    if (output.SupportMarkdown)
+                        builder.AppendLine("```");
+
+                    await output.SendAsync(builder.ToString());
+                    break;
+
+                // Print the application info
+                case "info":
+                case "version":
+                case "about":
+                    // Builds the text
+                    builder = new StringBuilder();
+
+                    // Starts a code block if markdown is supported
+                    if (output.SupportMarkdown)
+                        builder.AppendLine("```");
+
+                    builder.AppendLine(string.Format("{0} - {1}", Program.ApplicationName, Program.ApplicationVersion));
+                    builder.AppendLine("Homepage:   https://www.david-schulte.de");
+                    builder.AppendLine("GitHub:     https://github.com/Arcus92/DiscordMusicPlayer");
+                    builder.AppendLine("E-Mail:     mail@david-schulte.de");
+                    builder.AppendLine();
+                    builder.AppendLine("Thank you for using this application!");
+
+                    // Ends the code block if markdown is supported
+                    if (output.SupportMarkdown)
+                        builder.AppendLine("```");
+
+                    
+                    await output.SendAsync(builder.ToString());
                     break;
             }
         }

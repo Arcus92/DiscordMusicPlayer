@@ -13,5 +13,10 @@ namespace DiscordMusicPlayer.CommandSystem
         /// <param name="message"></param>
         /// <returns></returns>
         Task SendAsync(string message);
+
+        /// <summary>
+        /// Gets if markdown commands are supported by this output
+        /// </summary>
+        bool SupportMarkdown { get; }
     }
 }

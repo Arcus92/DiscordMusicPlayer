@@ -17,5 +17,14 @@ namespace DiscordMusicPlayer.CommandSystem
 
             return Task.CompletedTask;
         }
+
+        /// <summary>
+        /// Gets if markdown commands are supported by this output
+        /// </summary>
+        public bool SupportMarkdown
+        {
+            // Markdown is not supported by the default console output
+            get { return false; }
+        }
     }
 }

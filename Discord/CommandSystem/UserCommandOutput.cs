@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace DiscordMusicPlayer.CommandSystem
 {
     /// <summary>
-    /// DS 2017-06-27: A commando output for a discrod chat. 
+    /// DS 2017-06-27: A commando output for a discord chat. 
     /// </summary>
     internal class UserCommandOutput : ICommandOutput
     {
@@ -30,6 +30,15 @@ namespace DiscordMusicPlayer.CommandSystem
         public async Task SendAsync(string message)
         {
             await m_User.SendMessageAsync(message);
+        }
+
+        /// <summary>
+        /// Gets if markdown commands are supported by this output
+        /// </summary>
+        public bool SupportMarkdown
+        {
+            // Markdown is supported by the discrod chat
+            get { return true; }
         }
     }
 }
