@@ -98,6 +98,18 @@ namespace DiscordMusicPlayer
             // Shuffle the music
             if (settings.Shuffle) playlist.Shuffle();
 
+            // This is a user account
+            if ((int)settings.TokenType == 0) // Discord.TokenType.User
+            {
+                Logger.Log(Tag, "--------------------------------------------------");
+                Logger.Log(Tag, "Do not use a user account for this application!");
+                Logger.Log(Tag, "This violates the Terms of Service of Discord and");
+                Logger.Log(Tag, "can result in an account ban.");
+                Logger.Log(Tag, "Press any key to continue at your own risk!");
+                Logger.Log(Tag, "--------------------------------------------------");
+
+                Console.ReadKey();
+            }
 
             // Create the discord player
             using (m_DiscordMusicPlayer = new DiscordMusicPlayer(settings.TokenType, settings.Token))
