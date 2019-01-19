@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace DiscordMusicPlayer
+namespace DiscordMusicPlayer.Music
 {
     /// <summary>
     /// DS 2017-06-24: The current playlist
@@ -46,11 +46,7 @@ namespace DiscordMusicPlayer
         /// <param name="musicFile"></param>
         public void Add(MusicFile musicFile)
         {
-            lock (ListLock)
-            {
-                m_MusicFiles.Add(musicFile);
-                m_Count++;
-            }
+            AddMusicFileToList(musicFile);
         }
 
         /// <summary>
@@ -59,13 +55,38 @@ namespace DiscordMusicPlayer
         /// <param name="musicFiles"></param>
         public void AddRange(IEnumerable<MusicFile> musicFiles)
         {
+            foreach (var musicFile in musicFiles)
+            {
+                AddMusicFileToList(musicFile);
+            }
+        }
+
+        /// <summary>
+        /// Adds the music file to the playlist.
+        /// This will add the track at the end of the list or
+        /// if shuffle is enabled at a random position.
+        /// </summary>
+        /// <param name="musicFile"></param>
+        private void AddMusicFileToList(MusicFile musicFile)
+        {
             lock (ListLock)
             {
-                foreach (var musicFile in musicFiles)
+                if (m_IsShuffle)
                 {
-                    m_MusicFiles.Add(musicFile);
-                    m_Count++;
+                    // Gets a random position for the music file but makes sure
+                    // the file is always inserted after the current track.
+                    // If the import of the library takes some time and the first tracks 
+                    // were already played there is a chance that the track could be imported
+                    // before the currently played track. This would shift m_CurrentPosition. 
+                    int pos = m_CurrentPosition + m_Random.Next(m_Count - m_CurrentPosition) + 1;
+                    m_MusicFiles.Insert(pos, musicFile);
                 }
+                else
+                {
+                    // Simply adds the track to the list
+                    m_MusicFiles.Add(musicFile);
+                }
+                m_Count++;
             }
         }
 
@@ -83,28 +104,46 @@ namespace DiscordMusicPlayer
             }
         }
 
+        #region Shuffle
+
+        /// <summary>
+        /// A rng used for the shuffle function
+        /// </summary>
+        private Random m_Random = new Random();
+
+        /// <summary>
+        /// Stores that the playlist is shuffled
+        /// </summary>
+        private bool m_IsShuffle;
+
         /// <summary>
         /// Shuffles the playlist
         /// </summary>
         public void Shuffle()
         {
+            // Sets the playlist to shuffled
+            m_IsShuffle = true;
+
+            // Is this still needed if we have the new shuffle flag that inserts 
+            // the tracks in a random position anyway?
+            // Maybe we'll add a shuffle command later so i leave this here.
             lock (ListLock)
             {
                 m_CurrentPosition = 0;
-
-                Random random = new Random();
 
                 int n = m_MusicFiles.Count;
                 while (n > 1)
                 {
                     n--;
-                    int k = random.Next(n + 1);
+                    int k = m_Random.Next(n + 1);
                     var value = m_MusicFiles[k];
                     m_MusicFiles[k] = m_MusicFiles[n];
                     m_MusicFiles[n] = value;
                 }
             }
         }
+
+        #endregion Shuffle
 
         #endregion List
 
@@ -163,7 +202,7 @@ namespace DiscordMusicPlayer
                     foundAny = true;
                 }
 
-                // We found a track by the title ... we do not neet to check the rest
+                // We found a track by the title ... we do not need to check the rest
                 if (foundAny) yield break;
 
                 // Search every name field
@@ -176,56 +215,5 @@ namespace DiscordMusicPlayer
         }
 
         #endregion Find
-
-        #region Static
-
-        /// <summary>
-        /// The allowed music extansion
-        /// </summary>
-        public static readonly string[] AllowedMusicExtansions = new string[] { ".mp3", ".wav" };
-
-        /// <summary>
-        /// Gets all music files from a directory
-        /// </summary>
-        /// <param name="directory"></param>
-        /// <param name="includeSubDirectories"></param>
-        /// <returns></returns>
-        public static IEnumerable<MusicFile> GetMusicFilesFromDirectory(string directory, bool includeSubDirectories)
-        {
-            // Check for existence
-            if (Directory.Exists(directory))
-            {
-                // Search all music files
-                foreach (string file in Directory.EnumerateFiles(directory, "*.*", includeSubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                    .Where(f => AllowedMusicExtansions.Contains(Path.GetExtension(f).ToLower())))
-                {
-                    yield return new MusicFile(file);
-                }
-            }
-            else
-            {
-                Logger.Log("Playlist", "Invalid directory: {0}", directory);
-            }
-        }
-
-        /// <summary>
-        /// Gets all music files from directories
-        /// </summary>
-        /// <param name="directories"></param>
-        /// <param name="includeSubDirectories"></param>
-        /// <returns></returns>
-        public static IEnumerable<MusicFile> GetMusicFilesFromDirectories(IEnumerable<string> directories, bool includeSubDirectories)
-        {
-            foreach (var directory in directories)
-            {
-                // Load all files from this directory
-                foreach (var musicFile in GetMusicFilesFromDirectory(directory, includeSubDirectories))
-                {
-                    yield return musicFile;
-                }
-            }
-        }
-
-        #endregion Static
     }
 }

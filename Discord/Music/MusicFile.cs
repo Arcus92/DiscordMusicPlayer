@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace DiscordMusicPlayer
+namespace DiscordMusicPlayer.Music
 {
     /// <summary>
     /// DS 2017-06-24: A single music file

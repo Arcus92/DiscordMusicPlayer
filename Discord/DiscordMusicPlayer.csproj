@@ -205,9 +205,10 @@
     <Compile Include="DiscordMusicPlayer.cs" />
     <Compile Include="CommandSystem\ICommandOutput.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="MusicFile.cs" />
+    <Compile Include="Music\MusicFile.cs" />
     <Compile Include="MusicPlayer.cs" />
-    <Compile Include="Playlist.cs" />
+    <Compile Include="Music\MusicFileScanner.cs" />
+    <Compile Include="Music\Playlist.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
@@ -226,9 +227,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="opus.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

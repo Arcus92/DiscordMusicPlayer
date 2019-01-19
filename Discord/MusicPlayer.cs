@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Audio;
 using Discord.Audio.Streams;
+using DiscordMusicPlayer.Music;
 using NAudio.Wave;
 using System;
 using System.Threading;
@@ -208,7 +209,13 @@ namespace DiscordMusicPlayer
             MusicFile musicTrack = GetCurrentMusicFile();
 
             if (musicTrack != null)
+            {
                 Play(musicTrack);
+            }
+            else
+            {
+                Logger.Log("Music", "There are no music files to play!");
+            }
         }
 
         /// <summary>

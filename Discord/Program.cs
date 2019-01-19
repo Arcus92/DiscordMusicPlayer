@@ -1,4 +1,5 @@
 ﻿using DiscordMusicPlayer.CommandSystem;
+using DiscordMusicPlayer.Music;
 using System;
 using System.Reflection;
 
@@ -73,27 +74,16 @@ namespace DiscordMusicPlayer
                 return;
             }
 
-            // Allowed users
-            if (settings.AllowedUsers == null || settings.AllowedUsers.Length == 0)
-            {
-                Logger.Log(Tag, "There are no allowed users to control this bot. You are not able to change the current track.");
-            }
-
             // Load the playlist
-            Playlist playlist = new Playlist();
+            var playlist = new Playlist();
+            var scanner = new MusicFileScanner();
 
-            Logger.Log("Playlist", "Loading music files...");
-            playlist.AddRange(Playlist.GetMusicFilesFromDirectories(settings.Directories, true));
+            // Starts the music scanner
+            scanner.Start(playlist, settings.Directories);
+           
+            // Wait two seconds to index at least a few tracks before starting the playback.
+            scanner.WaitForScanner(2000);
 
-
-            // We cannot start the tool with no music
-            if (playlist.Count == 0)
-            {
-                Logger.Log("Playlist", "There were no music files found! Shutdown program...");
-                Console.ReadKey();
-                return;
-            }
-            else Logger.Log("Playlist", "{0} music files found!", playlist.Count);
 
             // Shuffle the music
             if (settings.Shuffle) playlist.Shuffle();
@@ -125,6 +115,7 @@ namespace DiscordMusicPlayer
                 // Connect
                 m_DiscordMusicPlayer.Connect().Wait();
 
+                // Join the default guild an channel
                 m_DiscordMusicPlayer.JoinAudioChannel(settings.Guild, settings.Channel).Wait();
 
                 bool loop = true;
@@ -155,6 +146,9 @@ namespace DiscordMusicPlayer
                     }
                 }
             }
+
+            // Abort the scanner if it is still active.
+            scanner.Abort();
         }
 
         #region Exit handler

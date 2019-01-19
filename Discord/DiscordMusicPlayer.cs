@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using DiscordMusicPlayer.CommandSystem;
+using DiscordMusicPlayer.Music;
 using System;
 using System.Collections.Generic;
 using System.Linq;
