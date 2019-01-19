@@ -40,5 +40,31 @@ info                    - Shows the version number and links to the creators hom
 exit                    - Closes the application. This can only be used in console mode!
 ```
 
-### License
-See [LICENSE](LICENSE)
+
+## FAQ - Frequently Asked Questions
+
+##### Why doesn't the bot play any music? I can't hear it.
+There are two reasons for that. If you're using the bot for the first time you need to make sure that the requirements were installed on your computer.
+
+If you used the bot a few minutes ago restarted it and it is muted now you have to close the bot by closing the console window or use the `exit` command.
+When you kill the process in any other way the bot cannot disconnect from the discord server properly. It will timeout in a minute but if you rejoin the server while the bot user is sill in the voice channel it is not able to play any music. Just restart the bot and try again. 
+
+##### Can i remote control the bot?
+Yes you can. Simply add you Discord user name to the `AllowedUsers` list in the configuration file. You need to restart the bot after editing the file. Now you can send commands via the private Discord chat.
+
+##### Can i play music from a NAS or any other network storage?
+Yes. You can use any mounted drive like `X:\MyMusic\` and any Windows file sharing path like `\\192.168.178.100\MyMusic`.
+
+##### Can i play YouTube music videos with this?
+No. Sorry this feature is not supported.
+
+## Requirements
+You need to install these requirements in order to run the bot:
+
+* [Microsoft Visual C++ 2015 Redistributable (x86)](https://www.microsoft.com/de-de/download/details.aspx?id=48145) *(vc_redist.x86.exe)*
+
+## License
+This project is licensed under the terms of the [MIT license](LICENSE).
+
+
+Thanks to the [Discord.Net](https://github.com/RogueException/Discord.Net) for creating such great api!
