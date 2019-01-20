@@ -1,4 +1,7 @@
-﻿//#define USE_FFMPEG
+﻿// NAudio will only work on windows. We can use ffmpeg on Linux or MacOS.
+#if !WINDOWS || FORCE_FFMPEG
+#define USE_FFMPEG
+#endif // !WINDOWS
 
 using Discord;
 using Discord.Audio;

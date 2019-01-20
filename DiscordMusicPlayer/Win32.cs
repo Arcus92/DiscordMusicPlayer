@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#if WINDOWS
+using System.Runtime.InteropServices;
 
 namespace DiscordMusicPlayer
 {
@@ -36,3 +37,4 @@ namespace DiscordMusicPlayer
         public delegate bool ConsoleCtrlHandler(ConsoleCtrlTypes ctrlType);
     }
 }
+#endif // WINDOWS

@@ -38,10 +38,11 @@ namespace DiscordMusicPlayer
             Logger.Log(Tag, "-------------------------------------");
             Logger.Log(Tag, "{0} - {1}", ApplicationName, ApplicationVersion);
             Logger.Log(Tag, "-------------------------------------");
-            Logger.Log(Tag, "Type <help> for a list of all commands.");
             Logger.Log(Tag, "Type <exit> to close the program.");
+            Logger.Log(Tag, "Type <help> to list all commands.");
             Logger.Log(Tag, "Starting...");
 
+#if WINDOWS
             // Use a try-catch block to set the console exit handler.
             // This win32 api will fail on non-Windows systems.
             // This is completely optional so we can ignore it.
@@ -54,6 +55,7 @@ namespace DiscordMusicPlayer
             {
                 Logger.Log(Tag, "Could not set console close handler. Please use the 'exit' command to close the application properly.");
             }
+#endif // WINDOWS
 
             // Load the settings
             var settings = new Settings("config.xml");
@@ -63,7 +65,7 @@ namespace DiscordMusicPlayer
             // Token
             if (string.IsNullOrEmpty(settings.Token))
             {
-                Logger.Log(Tag, "Token is empty! Shutdown program...");
+                Logger.Log(Tag, "Token is empty! Press any key to shutdown...");
                 Console.ReadKey();
                 return;
             }
@@ -71,7 +73,7 @@ namespace DiscordMusicPlayer
             // Guild
             if (string.IsNullOrEmpty(settings.Guild))
             {
-                Logger.Log(Tag, "Guild name is empty! Shutdown program...");
+                Logger.Log(Tag, "Guild name is empty! Press any key to shutdown...");
                 Console.ReadKey();
                 return;
             }
@@ -79,7 +81,7 @@ namespace DiscordMusicPlayer
             // Channel
             if (string.IsNullOrEmpty(settings.Channel))
             {
-                Logger.Log(Tag, "Channel name is empty! Shutdown program...");
+                Logger.Log(Tag, "Channel name is empty! Press any key to shutdown...");
                 Console.ReadKey();
                 return;
             }
@@ -90,7 +92,7 @@ namespace DiscordMusicPlayer
 
             // Starts the music scanner
             scanner.Start(playlist, settings.Directories);
-           
+
             // Wait two seconds to index at least a few tracks before starting the playback.
             scanner.WaitForScanner(2000);
 
@@ -164,7 +166,8 @@ namespace DiscordMusicPlayer
         }
 
         #region Exit handler
-        
+
+#if WINDOWS
         /// <summary>
         /// The console exit event 
         /// </summary>
@@ -181,6 +184,7 @@ namespace DiscordMusicPlayer
             // Returns true success the exit event
             return true;
         }
+#endif // WINDOWS
 
         #endregion Exit handler
     }

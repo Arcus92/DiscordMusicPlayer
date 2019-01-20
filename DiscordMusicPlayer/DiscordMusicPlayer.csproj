@@ -20,6 +20,18 @@
                   >
     <RunCommand>$(MSBuildProgramFiles32)\dotnet\dotnet</RunCommand>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefineConstants>WINDOWS</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(OS)' == 'Linux'">
+    <DefineConstants>LINUX</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(OS)' == 'Darwin'">
+    <DefineConstants>DARWIN</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.0.1" />
