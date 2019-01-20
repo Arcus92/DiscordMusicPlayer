@@ -1,9 +1,13 @@
-﻿using Discord;
+﻿//#define USE_FFMPEG
+
+using Discord;
 using Discord.Audio;
 using Discord.Audio.Streams;
 using DiscordMusicPlayer.Music;
 using NAudio.Wave;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +21,7 @@ namespace DiscordMusicPlayer
 
     /// <summary>
     /// DS 2017-06-24: The music player
+    /// DS 2019-01-20: Added a ffmpeg stream mode. This will replace the NAudio lib for Linux.
     /// </summary>
     internal class MusicPlayer
     {
@@ -95,11 +100,11 @@ namespace DiscordMusicPlayer
             {
                 await LeaveAudioChannel();
             }
-            
+
 
             // Joins the new audio channel
             m_CurrentAudioChannel = channel;
-            
+
             // Connect
             m_AudioClient = await channel.ConnectAsync();
 
@@ -165,15 +170,6 @@ namespace DiscordMusicPlayer
                 if (value > 1f) value = 1f;
 
                 m_Volume = value;
-
-                lock (m_PlayerLock)
-                {
-                    // Sets the current audio volume
-                    if (m_CurrentAudioPlayer != null)
-                    {
-                        m_CurrentAudioPlayer.Volume = value;
-                    }
-                }
             }
         }
 
@@ -237,7 +233,7 @@ namespace DiscordMusicPlayer
         /// </summary>
         public void Stop()
         {
-            lock(m_PlayerLock)
+            lock (m_PlayerLock)
             {
                 // Close the current music file
                 CloseMusicFileInPlayerLoop();
@@ -266,15 +262,22 @@ namespace DiscordMusicPlayer
         /// </summary>
         private bool m_RunPlayerLoop;
 
+#if USE_FFMPEG
+        /// <summary>
+        /// The current FFMpeg process
+        /// </summary>
+        private Process m_ProcessFFMpeg;
+#else
         /// <summary>
         /// The current audio player
         /// </summary>
         private AudioFileReader m_CurrentAudioPlayer;
 
         /// <summary>
-        /// The current music resampler
+        /// The current music re-sampler
         /// </summary>
         private MediaFoundationResampler m_CurrentMusicResampler;
+#endif // USE_FFMPEG
 
         /// <summary>
         /// The current player loop
@@ -329,11 +332,13 @@ namespace DiscordMusicPlayer
             // Sets the highest priority for the audio thread
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
+
             // Opens the output stream
             using (var output = m_AudioClient.CreatePCMStream(AudioApplication.Music, OutputFormat.SampleRate))
             {
                 int blockSize = OutputFormat.AverageBytesPerSecond / 25; // Establish the size of our AudioBuffer
                 byte[] buffer = new byte[blockSize];
+                int read;
                 int byteCount;
 
                 // Run the player
@@ -343,36 +348,66 @@ namespace DiscordMusicPlayer
                     lock (m_PlayerLock)
                     {
                         // Wait
-                        if (m_AudioClient == null || m_CurrentMusicResampler == null)
+                        if (m_AudioClient == null ||
+#if USE_FFMPEG
+                            m_ProcessFFMpeg == null
+#else
+                            m_CurrentMusicResampler == null
+#endif // USE_FFMPEG
+                            )
                         {
                             Thread.Sleep(10);
                         }
                         else
                         {
-                            // Read from sampler
-                            if ((byteCount = m_CurrentMusicResampler.Read(buffer, 0, blockSize)) <= 0)
+#if USE_FFMPEG
+                            var stream = m_ProcessFFMpeg.StandardOutput.BaseStream;
+#else
+                            var stream = m_CurrentMusicResampler;
+#endif // USE_FFMPEG
+                            // Resets the byte count
+                            byteCount = 0;
+                            do
                             {
-                                // End of song!
+                                // Read from sampler
+                                if ((read = stream.Read(buffer, byteCount, blockSize - byteCount)) <= 0)
+                                {
+                                    // End of song!
 
-                                // Close
-                                CloseMusicFileInPlayerLoop();
+                                    // Close
+                                    CloseMusicFileInPlayerLoop();
 
-                                // Play the next song
-                                Task.Run(() => { Next(); });
+                                    // Play the next song
+                                    Task.Run(() => { Next(); });
 
-                                // Run the loop
-                                continue;
+                                    // Break to the main loop
+                                    break;
+                                }
+                                byteCount += read;
+                            } while (byteCount < blockSize);
+
+                            // If the volume is 100% we can entirely skip this
+                            if (m_Volume != 1f)
+                            {
+                                // We can not control the volume with ffmpeg so we do a little trick.
+                                // The audio data is a signed 16bit little-endian stream. 
+                                // We can simply multiply the volume factor to the bit data.
+                                for (int i = 0; i < byteCount; i += 2)
+                                {
+                                    // Gets the audio sound
+                                    short data = (short)(buffer[i] + buffer[i + 1] * 256);
+
+                                    // Multiply the volume
+                                    data = (short)(data * m_Volume);
+
+                                    // Write the short values back
+                                    buffer[i] = (byte)(data % 256);
+                                    buffer[i + 1] = (byte)(data / 256);
+                                }
                             }
 
-                            if (byteCount < blockSize)
-                            {
-                                // Incomplete Frame
-                                for (int i = byteCount; i < blockSize; i++)
-                                    buffer[i] = 0;
-                            }
-                            
                             // Send the buffer to Discord
-                            output.Write(buffer, 0, blockSize);
+                            output.Write(buffer, 0, byteCount);
                         }
                     }
                 }
@@ -388,19 +423,32 @@ namespace DiscordMusicPlayer
         {
             try
             {
+#if USE_FFMPEG
+                // Creates the process info
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "ffmpeg",
+                    Arguments = string.Format("-hide_banner -loglevel panic -i \"{0}\" -ac {1} -f s16le -ar {2} -nostdin -", musicFile.File, OutputFormat.Channels, OutputFormat.SampleRate),
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+
+                // Starts the process
+                m_ProcessFFMpeg = Process.Start(processStartInfo);
+#else
                 // Create a new Disposable MP3FileReader, to read audio from the filePath parameter
                 m_CurrentAudioPlayer = new AudioFileReader(musicFile.File);
-                m_CurrentAudioPlayer.Volume = m_Volume;
 
-                // Creates the resampler
+                // Creates the re-sampler
                 m_CurrentMusicResampler = new MediaFoundationResampler(m_CurrentAudioPlayer, OutputFormat);
-                // Set the quality of the resampler to 60, the highest quality
+                // Set the quality of the re-sampler to 60, the highest quality
                 m_CurrentMusicResampler.ResamplerQuality = 60;
+#endif // USE_FFMPEG
 
                 // Call the event
                 NotifyCurrentMusicTrackChanged(musicFile);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Show error
                 Logger.Log("Music", "Could not read music file: " + musicFile.File);
@@ -420,13 +468,28 @@ namespace DiscordMusicPlayer
         /// </summary>
         private void CloseMusicFileInPlayerLoop()
         {
+#if USE_FFMPEG
+            // Kill the process
+            try
+            {
+                m_ProcessFFMpeg?.Kill();
+            }
+            catch
+            {
+                // Kill will fail if the task was already terminated.
+                // We could check HasExited but this is not thread safe.
+                // So the easy way is to ignore all exceptions.
+            }
+            m_ProcessFFMpeg = null;
+#else
             // Release all
             m_CurrentAudioPlayer?.Dispose();
             m_CurrentMusicResampler?.Dispose();
             m_CurrentAudioPlayer = null;
             m_CurrentMusicResampler = null;
+#endif // USE_FFMPEG
         }
 
-        #endregion Player loop
+#endregion Player loop
     }
 }

@@ -6,7 +6,7 @@ using System.Reflection;
 namespace DiscordMusicPlayer
 {
     /// <summary>
-    /// The programm
+    /// The program
     /// </summary>
     internal class Program
     {
@@ -34,16 +34,26 @@ namespace DiscordMusicPlayer
             // The tag
             const string Tag = "Program";
 
-            // Register the console exit handler
-            Win32.SetConsoleCtrlHandler(OnConsoleExitEvent, true);
-
             // Header
-            Logger.Log("Program", "-------------------------------------");
-            Logger.Log("Program", "{0} - {1}", ApplicationName, ApplicationVersion);
-            Logger.Log("Program", "-------------------------------------");
-            Logger.Log("Program", "Type <help> for a list of all commands.");
-            Logger.Log("Program", "Type <exit> to close the program.");
-            Logger.Log("Program", "Starting...");
+            Logger.Log(Tag, "-------------------------------------");
+            Logger.Log(Tag, "{0} - {1}", ApplicationName, ApplicationVersion);
+            Logger.Log(Tag, "-------------------------------------");
+            Logger.Log(Tag, "Type <help> for a list of all commands.");
+            Logger.Log(Tag, "Type <exit> to close the program.");
+            Logger.Log(Tag, "Starting...");
+
+            // Use a try-catch block to set the console exit handler.
+            // This win32 api will fail on non-Windows systems.
+            // This is completely optional so we can ignore it.
+            try
+            {
+                // Register the console exit handler
+                Win32.SetConsoleCtrlHandler(OnConsoleExitEvent, true);
+            }
+            catch
+            {
+                Logger.Log(Tag, "Could not set console close handler. Please use the 'exit' command to close the application properly.");
+            }
 
             // Load the settings
             var settings = new Settings("config.xml");
@@ -125,6 +135,8 @@ namespace DiscordMusicPlayer
                 {
                     // Read the command
                     string str = Console.ReadLine();
+                    if (str == null)
+                        continue;
 
                     // Parse the command
                     var command = Command.Parse(str);

@@ -74,7 +74,7 @@ namespace DiscordMusicPlayer.Music
         {
             if (m_Thread != null)
             {
-                m_Thread.Abort();
+                //m_Thread.Abort();
             }
         }
 
