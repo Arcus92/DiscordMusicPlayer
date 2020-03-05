@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <StartupObject></StartupObject>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <Authors>David Schulte</Authors>
     <Company />
     <Description>The Discord Music Player is small Windows console application that can play your local music library in a Discord voice channel using your own Discord bot.</Description>
