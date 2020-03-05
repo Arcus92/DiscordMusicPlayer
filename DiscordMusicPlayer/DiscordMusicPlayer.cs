@@ -5,7 +5,6 @@ using DiscordMusicPlayer.Music;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -170,7 +169,7 @@ namespace DiscordMusicPlayer
         /// <returns></returns>
         public async Task JoinAudioChannel(string guildName, string channelName)
         {
-            const string Tag = "Join";
+            const string Tag = "JoinAudioChannel";
 
             // Find the guild
             IGuild guild = GetGuildByNameOrId(m_Client.Guilds, guildName);
@@ -194,7 +193,7 @@ namespace DiscordMusicPlayer
         /// <returns></returns>
         public async Task JoinAudioChannel(string channelName)
         {
-            const string Tag = "Join";
+            const string Tag = "JoinAudioChannel";
 
             if (m_Guild != null)
             {
@@ -215,7 +214,7 @@ namespace DiscordMusicPlayer
         /// <returns></returns>
         private async Task JoinAudioChannel(IGuild guild, string channelName)
         {
-            const string Tag = "Join";
+            const string Tag = "JoinAudioChannel";
 
             // Stores the given guild
             m_Guild = guild;
@@ -249,6 +248,185 @@ namespace DiscordMusicPlayer
         }
 
         #endregion Audio channel
+
+        #region Notification channel
+
+        /// <summary>
+        /// The current notification channel.
+        /// The program will post updates of the current playing
+        /// track. This can create a lot of spam!
+        /// This feature is optinal and should use at own risk.
+        /// </summary>
+        private ITextChannel m_CurrentNotificationChannel;
+
+        /// <summary>
+        /// Gets and sets the notification channel.
+        /// </summary>
+        public ITextChannel NotificationChannel
+        {
+            get { return m_CurrentNotificationChannel; }
+        }
+
+        /// <summary>
+        /// Gets the notification message.
+        /// The bot will write notifications in this text change when a
+        /// music track changed.
+        /// You can use the following placeholders: {{title}}, {{artist}},
+        /// and {{album}}
+        /// </summary>
+        public string NotificationMessage { get; set; }
+
+        /// <summary>
+        /// Joins a notification channel
+        /// </summary>
+        /// <param name="channel"></param>
+        public async Task JoinNotificationChannel(ITextChannel channel)
+        {
+            // Leave the old channel
+            if (m_CurrentNotificationChannel != null)
+            {
+                await LeaveNotificationChannel();
+            }
+
+            // Joins the new audio channel
+            m_CurrentNotificationChannel = channel;
+
+            // Updates the current track
+            await UpdateTrackInNotificationChannel(m_MusicPlayer.Playlist.CurrentMusicFile);
+        }
+
+        /// <summary>
+        /// Leavse the current notification channel
+        /// </summary>
+        /// <returns></returns>
+        public async Task LeaveNotificationChannel()
+        {
+            if (m_CurrentNotificationChannel == null) return;
+
+            // This method is async to send a goodbye message or something else in future.
+
+            // Sets the channel to null
+            m_CurrentNotificationChannel = null;
+        }
+
+        /// <summary>
+        /// Posts the current track in the notification channel
+        /// </summary>
+        /// <param name="musicFile">The current music file</param>
+        private async Task UpdateTrackInNotificationChannel(MusicFile musicFile)
+        {
+            // Skip if there is no notification channel
+            if (m_CurrentNotificationChannel == null) return;
+
+            // Also skip if the music file is null
+            if (musicFile == null) return;
+
+            // And also the notification message must be set
+            if (string.IsNullOrEmpty(NotificationMessage)) return;
+
+            // Builds the message
+            string message = NotificationMessage;
+            message = message.Replace("{{title}}", musicFile.Title);
+            message = message.Replace("{{artist}}", musicFile.Artists);
+            message = message.Replace("{{album}}", musicFile.Album);
+
+            // Sends the message
+            await m_CurrentNotificationChannel.SendMessageAsync(message);
+        }
+
+        /// <summary>
+        /// Joins the given notification channel on the given guild 
+        /// </summary>
+        /// <param name="guildName">The name (or id) of the channel to connect with</param>
+        /// <param name="channelName">The name (or id) of the guild</param>
+        /// <returns></returns>
+        public async Task JoinNotificationChannel(string guildName, string channelName)
+        {
+            // Skip on empty channel name
+            if (string.IsNullOrEmpty(channelName)) return;
+
+            const string Tag = "JoinNotificationChannel";
+
+            // Find the guild
+            IGuild guild = GetGuildByNameOrId(m_Client.Guilds, guildName);
+
+            // Found
+            if (guild != null)
+            {
+                await JoinNotificationChannel(guild, channelName);
+            }
+            else
+            {
+                // Log error
+                Logger.Log(Tag, "Guild '{0}' was not found!", guildName);
+            }
+        }
+
+        /// <summary>
+        /// Joins the given notification channel on the current guild 
+        /// </summary>
+        /// <param name="channelName"></param>
+        /// <returns></returns>
+        public async Task JoinNotificationChannel(string channelName)
+        {
+            // Skip on empty channel name
+            if (string.IsNullOrEmpty(channelName)) return;
+
+            const string Tag = "JoinNotificationChannel";
+
+            if (m_Guild != null)
+            {
+                await JoinNotificationChannel(m_Guild, channelName);
+            }
+            else
+            {
+                // Log error
+                Logger.Log(Tag, "There is no active guild!");
+            }
+        }
+
+        /// <summary>
+        /// Joins the notification channel
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="channelName"></param>
+        /// <returns></returns>
+        private async Task JoinNotificationChannel(IGuild guild, string channelName)
+        {
+            // Skip on empty channel name
+            if (string.IsNullOrEmpty(channelName)) return;
+
+            const string Tag = "JoinNotificationChannel";
+
+            // Load all voice channel
+            var channels = await guild.GetTextChannelsAsync();
+
+            // Finds the voice channel
+            ITextChannel channel = GetChannelByNameOrId(channels, channelName);
+
+            if (channel != null)
+            {
+                Logger.Log(Tag, "Joining text channel '{0}' on '{1}'...", channelName, guild.Name);
+
+                try
+                {
+                    await JoinNotificationChannel(channel);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(Tag, "Failed to join text channel '{0}' on '{1}'!", channelName, guild.Name);
+                    Logger.Log(Tag, e.ToString());
+                }
+
+            }
+            else
+            {
+                // Log error
+                Logger.Log(Tag, "Text channel '{0}' was not found on '{1}'!", channelName, guild.Name);
+            }
+        }
+
+        #endregion Notification channel
 
         #region Music player
 
@@ -299,6 +477,9 @@ namespace DiscordMusicPlayer
 
                 // Change the discord status
                 await m_Client.SetGameAsync(musicFile.Name, null, ActivityType.Listening);
+
+                // Posts a message to the notification channel
+                await UpdateTrackInNotificationChannel(musicFile);
             }
             else
             {

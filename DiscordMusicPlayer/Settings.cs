@@ -30,7 +30,7 @@ namespace DiscordMusicPlayer
         public string Guild { get; private set; }
 
         /// <summary>
-        /// Gets the channel name or id
+        /// Gets the audio channel name or id
         /// </summary>
         public string Channel { get; private set; }
 
@@ -59,6 +59,20 @@ namespace DiscordMusicPlayer
         /// </summary>
         public float Volume { get; private set; }
 
+        /// <summary>
+        /// Gets the text channel name or id for the notification messages
+        /// </summary>
+        public string NotificationChannel { get; private set; }
+
+        /// <summary>
+        /// Gets the notification message.
+        /// The bot will write notifications in this text change when a
+        /// music track changed.
+        /// You can use the following placeholders: {{title}}, {{artist}},
+        /// and {{album}}
+        /// </summary>
+        public string NotificationMessage { get; private set; }
+
         #endregion Properties
 
         #region Load
@@ -75,6 +89,7 @@ namespace DiscordMusicPlayer
             TokenType = TokenType.Bot;
             Volume = 1f;
             Autoplay = true;
+            NotificationMessage = "Now playing: {{title}} - {{album}} - {{artist}}";
 
             // Load the file
             Load(file);
@@ -204,6 +219,18 @@ namespace DiscordMusicPlayer
                     if (reader.Name == "AllowedUsers")
                     {
                         AllowedUsers = ReadArray(reader, "AllowedUser").ToArray();
+                    }
+
+                    // Read the notification channel name
+                    if (reader.Name == "NotificationChannel")
+                    {
+                        NotificationChannel = reader.ReadElementContentAsString();
+                    }
+
+                    // Read the notification message
+                    if (reader.Name == "NotificationMessage")
+                    {
+                        NotificationMessage = reader.ReadElementContentAsString();
                     }
                 }
             }

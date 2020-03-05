@@ -120,6 +120,7 @@ namespace DiscordMusicPlayer
                 m_DiscordMusicPlayer.AllowedUsers = settings.AllowedUsers;
                 m_DiscordMusicPlayer.MusicPlayer.Volume = settings.Volume;
                 m_DiscordMusicPlayer.Autoplay = settings.Autoplay;
+                m_DiscordMusicPlayer.NotificationMessage = settings.NotificationMessage;
 
                 // Sets the playlist
                 m_DiscordMusicPlayer.Playlist = playlist;
@@ -127,7 +128,10 @@ namespace DiscordMusicPlayer
                 // Connect
                 m_DiscordMusicPlayer.Connect().Wait();
 
-                // Join the default guild an channel
+                // Join the default notification channel
+                m_DiscordMusicPlayer.JoinNotificationChannel(settings.Guild, settings.NotificationChannel).Wait();
+
+                // Join the default guild and channel
                 m_DiscordMusicPlayer.JoinAudioChannel(settings.Guild, settings.Channel).Wait();
 
                 bool loop = true;

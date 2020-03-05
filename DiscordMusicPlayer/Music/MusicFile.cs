@@ -56,7 +56,7 @@ namespace DiscordMusicPlayer.Music
                     using (FileStream fileStream = new FileStream(File, FileMode.Open))
                     {
                         // Use the mp3 reader
-                        using (Mp3Stream mp3Stream = new Mp3Stream(fileStream, Mp3Permissions.Read))
+                        using (var mp3Stream = new Mp3(fileStream, Mp3Permissions.Read))
                         {
                             // Has tags
                             if (mp3Stream.HasTags)

@@ -2,23 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <StartupObject></StartupObject>
-    <Version>1.1.0</Version>
+    <Version>1.1.2</Version>
     <Authors>David Schulte</Authors>
     <Company />
     <Description>The Discord Music Player is small Windows console application that can play your local music library in a Discord voice channel using your own Discord bot.</Description>
     <PackageProjectUrl>https://github.com/Arcus92/DiscordMusicPlayer</PackageProjectUrl>
     <Copyright>David Schulte (c) 2019</Copyright>
     <Platforms>x86</Platforms>
-  </PropertyGroup>
-
-  <PropertyGroup 
-      Condition="'$(OS)' == 'Windows_NT' and
-                 '$(PlatformTarget)' == 'x86' and
-                 '$(SelfContained)' != 'true'"
-                  >
-    <RunCommand>$(MSBuildProgramFiles32)\dotnet\dotnet</RunCommand>
+    <AssemblyVersion>1.1.2.0</AssemblyVersion>
+    <ApplicationIcon />
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -34,10 +28,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.0.1" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
-    <PackageReference Include="ID3" Version="0.3.0" />
-    <PackageReference Include="NAudio" Version="1.9.0-preview2" />
+    <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="Discord.Net.Core" Version="2.1.1" />
+    <PackageReference Include="ID3" Version="0.6.0" />
+    <PackageReference Include="NAudio" Version="1.9.0" />
   </ItemGroup>
 
   <ItemGroup>
