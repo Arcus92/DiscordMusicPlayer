@@ -101,7 +101,7 @@ namespace DiscordMusicPlayer
             // Leave the old channel
             if (m_AudioClient != null)
             {
-                await LeaveAudioChannel();
+                await LeaveAudioChannel().ConfigureAwait(false);
             }
 
 
@@ -109,10 +109,10 @@ namespace DiscordMusicPlayer
             m_CurrentAudioChannel = channel;
 
             // Connect
-            m_AudioClient = await channel.ConnectAsync();
+            m_AudioClient = await channel.ConnectAsync().ConfigureAwait(false);
 
             // Starts the player loop
-            await StartPlayerLoop();
+            await StartPlayerLoop().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -125,9 +125,9 @@ namespace DiscordMusicPlayer
             if (m_AudioClient == null) return;
 
             // Stops the player loop
-            await StopPlayerLoop();
+            await StopPlayerLoop().ConfigureAwait(false);
 
-            await m_AudioClient.StopAsync();
+            await m_AudioClient.StopAsync().ConfigureAwait(false);
 
             // Reset values
             m_AudioClient = null;
@@ -319,7 +319,7 @@ namespace DiscordMusicPlayer
                 m_RunPlayerLoop = false;
 
                 // Wait for the end
-                await m_CurrentPlayerLoop;
+                await m_CurrentPlayerLoop.ConfigureAwait(false);
 
                 // Set this to null
                 m_CurrentPlayerLoop = null;

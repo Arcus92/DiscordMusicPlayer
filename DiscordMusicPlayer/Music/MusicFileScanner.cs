@@ -154,7 +154,7 @@ namespace DiscordMusicPlayer.Music
             {
                 // Search all music files
                 foreach (string file in Directory.EnumerateFiles(directory, "*.*", includeSubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                    .Where(f => AllowedMusicExtansions.Contains(Path.GetExtension(f).ToLower())))
+                    .Where(f => AllowedMusicExtansions.Contains(Path.GetExtension(f).ToLowerInvariant())))
                 {
                     yield return new MusicFile(file);
                 }

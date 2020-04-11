@@ -4,6 +4,7 @@ using DiscordMusicPlayer.CommandSystem;
 using DiscordMusicPlayer.Music;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,13 +93,13 @@ namespace DiscordMusicPlayer
             m_TaskWaiterReady = new TaskCompletionSource<bool>();
 
             // Login
-            await m_Client.LoginAsync(TokenType, Token);
+            await m_Client.LoginAsync(TokenType, Token).ConfigureAwait(false);
 
             // Start the api
-            await m_Client.StartAsync();
+            await m_Client.StartAsync().ConfigureAwait(false);
 
             // Waits for the ready event
-            await m_TaskWaiterReady.Task;
+            await m_TaskWaiterReady.Task.ConfigureAwait(false);
         }
 
         /// <summary>
@@ -109,13 +110,13 @@ namespace DiscordMusicPlayer
             if (m_Client != null)
             {
                 // Leave the channel
-                await m_MusicPlayer.LeaveAudioChannel();
+                await m_MusicPlayer.LeaveAudioChannel().ConfigureAwait(false);
                 
                 // Logout
-                await m_Client.LogoutAsync();
+                await m_Client.LogoutAsync().ConfigureAwait(false);
 
                 // Stop the api
-                await m_Client.StopAsync();
+                await m_Client.StopAsync().ConfigureAwait(false);
             }
         }
 
@@ -129,7 +130,7 @@ namespace DiscordMusicPlayer
         /// <param name="channel"></param>
         private async Task JoinAudioChannel(IAudioChannel channel)
         {
-            await m_MusicPlayer.JoinAudioChannel(channel);
+            await m_MusicPlayer.JoinAudioChannel(channel).ConfigureAwait(false);
 
             // A audio channel was joined
             OnAudioChannelJoined();
@@ -141,7 +142,7 @@ namespace DiscordMusicPlayer
         /// <returns></returns>
         private async Task LeaveAudioChannel()
         {
-            await m_MusicPlayer.LeaveAudioChannel();
+            await m_MusicPlayer.LeaveAudioChannel().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -177,7 +178,7 @@ namespace DiscordMusicPlayer
             // Found
             if (guild != null)
             {
-                await JoinAudioChannel(guild, channelName);
+                await JoinAudioChannel(guild, channelName).ConfigureAwait(false);
             }
             else
             {
@@ -197,7 +198,7 @@ namespace DiscordMusicPlayer
 
             if (m_Guild != null)
             {
-                await JoinAudioChannel(m_Guild, channelName);
+                await JoinAudioChannel(m_Guild, channelName).ConfigureAwait(false);
             }
             else
             {
@@ -220,7 +221,7 @@ namespace DiscordMusicPlayer
             m_Guild = guild;
 
             // Load all voice channel
-            var channels = await guild.GetVoiceChannelsAsync();
+            var channels = await guild.GetVoiceChannelsAsync().ConfigureAwait(false);
 
             // Finds the voice channel
             IVoiceChannel channel = GetChannelByNameOrId(channels, channelName);
@@ -231,7 +232,7 @@ namespace DiscordMusicPlayer
 
                 try
                 {
-                    await JoinAudioChannel(channel);
+                    await JoinAudioChannel(channel).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -285,25 +286,23 @@ namespace DiscordMusicPlayer
             // Leave the old channel
             if (m_CurrentNotificationChannel != null)
             {
-                await LeaveNotificationChannel();
+                LeaveNotificationChannel();
             }
 
             // Joins the new audio channel
             m_CurrentNotificationChannel = channel;
 
             // Updates the current track
-            await UpdateTrackInNotificationChannel(m_MusicPlayer.Playlist.CurrentMusicFile);
+            await UpdateTrackInNotificationChannel(m_MusicPlayer.Playlist.CurrentMusicFile).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Leavse the current notification channel
         /// </summary>
         /// <returns></returns>
-        public async Task LeaveNotificationChannel()
+        public void LeaveNotificationChannel()
         {
             if (m_CurrentNotificationChannel == null) return;
-
-            // This method is async to send a goodbye message or something else in future.
 
             // Sets the channel to null
             m_CurrentNotificationChannel = null;
@@ -326,12 +325,12 @@ namespace DiscordMusicPlayer
 
             // Builds the message
             string message = NotificationMessage;
-            message = message.Replace("{{title}}", musicFile.Title);
-            message = message.Replace("{{artist}}", musicFile.Artists);
-            message = message.Replace("{{album}}", musicFile.Album);
+            message = message.Replace("{{title}}", musicFile.Title, StringComparison.InvariantCulture);
+            message = message.Replace("{{artist}}", musicFile.Artists, StringComparison.InvariantCulture);
+            message = message.Replace("{{album}}", musicFile.Album, StringComparison.InvariantCulture);
 
             // Sends the message
-            await m_CurrentNotificationChannel.SendMessageAsync(message);
+            await m_CurrentNotificationChannel.SendMessageAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -353,7 +352,7 @@ namespace DiscordMusicPlayer
             // Found
             if (guild != null)
             {
-                await JoinNotificationChannel(guild, channelName);
+                await JoinNotificationChannel(guild, channelName).ConfigureAwait(false);
             }
             else
             {
@@ -376,7 +375,7 @@ namespace DiscordMusicPlayer
 
             if (m_Guild != null)
             {
-                await JoinNotificationChannel(m_Guild, channelName);
+                await JoinNotificationChannel(m_Guild, channelName).ConfigureAwait(false);
             }
             else
             {
@@ -399,7 +398,7 @@ namespace DiscordMusicPlayer
             const string Tag = "JoinNotificationChannel";
 
             // Load all voice channel
-            var channels = await guild.GetTextChannelsAsync();
+            var channels = await guild.GetTextChannelsAsync().ConfigureAwait(false);
 
             // Finds the voice channel
             ITextChannel channel = GetChannelByNameOrId(channels, channelName);
@@ -410,14 +409,13 @@ namespace DiscordMusicPlayer
 
                 try
                 {
-                    await JoinNotificationChannel(channel);
+                    await JoinNotificationChannel(channel).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     Logger.Log(Tag, "Failed to join text channel '{0}' on '{1}'!", channelName, guild.Name);
                     Logger.Log(Tag, e.ToString());
                 }
-
             }
             else
             {
@@ -476,10 +474,10 @@ namespace DiscordMusicPlayer
                 Console.Title = musicFile.Name;
 
                 // Change the discord status
-                await m_Client.SetGameAsync(musicFile.Name, null, ActivityType.Listening);
+                await m_Client.SetGameAsync(musicFile.Name, null, ActivityType.Listening).ConfigureAwait(false);
 
                 // Posts a message to the notification channel
-                await UpdateTrackInNotificationChannel(musicFile);
+                await UpdateTrackInNotificationChannel(musicFile).ConfigureAwait(false);
             }
             else
             {
@@ -487,7 +485,7 @@ namespace DiscordMusicPlayer
                 Console.Title = "DiscordMusicPlayer";
 
                 // Change the discord status
-                await m_Client.SetGameAsync(null);
+                await m_Client.SetGameAsync(null).ConfigureAwait(false);
             }
         }
 
@@ -580,7 +578,7 @@ namespace DiscordMusicPlayer
                     var command = Command.Parse(e.Content);
 
                     // Execute the command
-                    await ExecuteCommand(command, new UserCommandOutput(e.Author));
+                    await ExecuteCommand(command, new UserCommandOutput(e.Author)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -598,7 +596,7 @@ namespace DiscordMusicPlayer
         private static bool IsUserInList(IEnumerable<string> users, SocketUser user)
         {
             // First scan ids
-            if (users.Contains(user.Id.ToString()))
+            if (users.Contains(user.Id.ToString(CultureInfo.InvariantCulture)))
                 return true;
 
             // Than the usernames (with #xxxx)
@@ -625,22 +623,22 @@ namespace DiscordMusicPlayer
             StringBuilder builder;
 
             // Select the command name
-            switch (command.Name.ToLower())
+            switch (command.Name.ToUpperInvariant())
             {
                 // Skip
-                case "next":
-                case "skip":
+                case "NEXT":
+                case "SKIP":
                     m_MusicPlayer.Next();
                     break;
 
                 // Stop
-                case "stop":
-                case "pause":
+                case "STOP":
+                case "PAUSE":
                     m_MusicPlayer.Stop();
                     break;
 
                 // Play
-                case "play":
+                case "PLAY":
                     // Continue
                     if (command.Arguments.Length == 0)
                     {
@@ -657,7 +655,7 @@ namespace DiscordMusicPlayer
                             // No files
                             if (musicFiles.Length == 0)
                             {
-                                await output.SendAsync("Song not found.");
+                                await output.SendAsync("Song not found.").ConfigureAwait(false);
                             }
                             // Only one file was found ... play it
                             else if (musicFiles.Length == 1)
@@ -689,20 +687,20 @@ namespace DiscordMusicPlayer
                                 if (output.SupportMarkdown)
                                     builder.AppendLine("```");
 
-                                await output.SendAsync(builder.ToString());
+                                await output.SendAsync(builder.ToString()).ConfigureAwait(false);
                             }
                         }
                     }
                     break;
 
                 // Change the volume
-                case "volume":
+                case "VOLUME":
                     int val;
                     // There is no argument
                     if (string.IsNullOrEmpty(command.Argument))
                     {
                         // Return the current volume
-                        await output.SendAsync(string.Format("The volume is currently at {0}%.", Math.Round(m_MusicPlayer.Volume * 100)));
+                        await output.SendAsync(string.Format("The volume is currently at {0}%.", Math.Round(m_MusicPlayer.Volume * 100))).ConfigureAwait(false);
                     }
                     else
                     {
@@ -720,23 +718,23 @@ namespace DiscordMusicPlayer
                     break;
 
                 // Joins another guild or channel 
-                case "join":
+                case "JOIN":
                     if (command.Arguments.Length == 1)
                     {
-                        await JoinAudioChannel(command.Arguments[0]);
+                        await JoinAudioChannel(command.Arguments[0]).ConfigureAwait(false);
                     }
                     else if (command.Arguments.Length == 2)
                     {
-                        await JoinAudioChannel(command.Arguments[0], command.Arguments[1]);
+                        await JoinAudioChannel(command.Arguments[0], command.Arguments[1]).ConfigureAwait(false);
                     }
                     else
                     {
-                        await output.SendAsync("Please enter a channel name or id: join [<guild name or id>] <channel name or id>");
+                        await output.SendAsync("Please enter a channel name or id: join [<guild name or id>] <channel name or id>").ConfigureAwait(false);
                     }
                     break;
 
                 // Prints a list of all commands
-                case "help":
+                case "HELP":
                     // Builds the text
                     builder = new StringBuilder();
 
@@ -762,13 +760,13 @@ namespace DiscordMusicPlayer
                     if (output.SupportMarkdown)
                         builder.AppendLine("```");
 
-                    await output.SendAsync(builder.ToString());
+                    await output.SendAsync(builder.ToString()).ConfigureAwait(false);
                     break;
 
                 // Print the application info
-                case "info":
-                case "version":
-                case "about":
+                case "INFO":
+                case "VERSION":
+                case "ABOUT":
                     // Builds the text
                     builder = new StringBuilder();
 
@@ -788,7 +786,7 @@ namespace DiscordMusicPlayer
                         builder.AppendLine("```");
 
                     
-                    await output.SendAsync(builder.ToString());
+                    await output.SendAsync(builder.ToString()).ConfigureAwait(false);
                     break;
             }
         }

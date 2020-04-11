@@ -84,8 +84,8 @@ namespace DiscordMusicPlayer
         public Settings(string file)
         {
             // Default values
-            Directories = new string[0];
-            AllowedUsers = new string[0];
+            Directories = Array.Empty<string>();
+            AllowedUsers = Array.Empty<string>();
             TokenType = TokenType.Bot;
             Volume = 1f;
             Autoplay = true;
@@ -133,7 +133,7 @@ namespace DiscordMusicPlayer
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Log error
                 Logger.Log("Settings", "Error while reading the settings file!");
@@ -242,7 +242,7 @@ namespace DiscordMusicPlayer
         /// <param name="reader"></param>
         /// <param name="itemName"></param>
         /// <returns></returns>
-        private IEnumerable<string> ReadArray(XmlReader reader, string itemName)
+        private static IEnumerable<string> ReadArray(XmlReader reader, string itemName)
         {
             while (reader.Read())
             {

@@ -1,5 +1,6 @@
 ﻿using Id3;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -50,7 +51,7 @@ namespace DiscordMusicPlayer.Music
             try
             {
                 // Mp3 file
-                if (Path.GetExtension(file).ToLower() == ".mp3")
+                if (Path.GetExtension(file).ToLowerInvariant() == ".mp3")
                 {
                     // Open the file
                     using (FileStream fileStream = new FileStream(File, FileMode.Open))
@@ -97,10 +98,10 @@ namespace DiscordMusicPlayer.Music
             builder.Append(Title);
 
             // Album
-            if (!string.IsNullOrEmpty(Album)) builder.AppendFormat(" - {0}", Album);
+            if (!string.IsNullOrEmpty(Album)) builder.AppendFormat(CultureInfo.InvariantCulture, " - {0}", Album);
 
             // Artist
-            if (!string.IsNullOrEmpty(Artists)) builder.AppendFormat(" - {0}", Artists);
+            if (!string.IsNullOrEmpty(Artists)) builder.AppendFormat(CultureInfo.InvariantCulture, " - {0}", Artists);
 
             Name = builder.ToString();
         }
@@ -113,7 +114,7 @@ namespace DiscordMusicPlayer.Music
         private static string RemoveInvalidCharsAndTrim(string text)
         {
             // Remove NULL-chars
-            text = text.Replace("\0", "");
+            text = text.Replace("\0", "", StringComparison.InvariantCulture);
 
             return text.Trim();
         }

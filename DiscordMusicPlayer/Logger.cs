@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace DiscordMusicPlayer
 {
@@ -70,7 +71,7 @@ namespace DiscordMusicPlayer
         /// <param name="args"></param>
         public static void Log(string tag, string message, params object[] args)
         {
-            Log(tag, string.Format(message, args));
+            Log(tag, string.Format(CultureInfo.InvariantCulture, message, args));
         }
 
         #endregion Static

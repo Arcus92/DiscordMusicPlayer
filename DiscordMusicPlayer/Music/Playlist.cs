@@ -196,7 +196,7 @@ namespace DiscordMusicPlayer.Music
             lock (ListLock)
             {
                 // Search the title
-                foreach (var musicFile in m_MusicFiles.Where(m => m.Title.ToLower().Contains(name.ToLower())))
+                foreach (var musicFile in m_MusicFiles.Where(m => m.Title.Contains(name, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     yield return musicFile;
                     foundAny = true;
@@ -206,7 +206,7 @@ namespace DiscordMusicPlayer.Music
                 if (foundAny) yield break;
 
                 // Search every name field
-                foreach (var musicFile in m_MusicFiles.Where(m => m.Name.ToLower().Contains(name.ToLower())))
+                foreach (var musicFile in m_MusicFiles.Where(m => m.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     yield return musicFile;
                 }

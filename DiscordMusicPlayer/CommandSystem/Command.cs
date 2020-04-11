@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -58,6 +59,9 @@ namespace DiscordMusicPlayer.CommandSystem
         /// <returns></returns>
         public static Command Parse(string commandLine)
         {
+            // Check for invalid valies
+            if (commandLine == null) throw new ArgumentNullException(nameof(commandLine));
+
             // Trims the command line
             commandLine = commandLine.Trim();
 
@@ -177,7 +181,7 @@ namespace DiscordMusicPlayer.CommandSystem
             }
             else
             {
-                command.Arguments = new string[0];
+                command.Arguments = Array.Empty<string>();
                 command.Argument = string.Empty;
             }
 

@@ -29,7 +29,7 @@ namespace DiscordMusicPlayer.CommandSystem
         /// <param name="message"></param>
         public async Task SendAsync(string message)
         {
-            await m_User.SendMessageAsync(message);
+            await m_User.SendMessageAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>

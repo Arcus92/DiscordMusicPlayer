@@ -150,7 +150,7 @@ namespace DiscordMusicPlayer
                     // Is command
                     if (!command.IsEmpty)
                     {
-                        switch (command.Name.ToLower())
+                        switch (command.Name.ToLowerInvariant())
                         {
                             case "exit":
                             case "quit":
