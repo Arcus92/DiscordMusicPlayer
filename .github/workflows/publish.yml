@@ -10,7 +10,7 @@ jobs:
     name: Release
     strategy:
       matrix:
-        target: ['linux-x64', 'win-x64', 'win-x32']
+        target: ['linux-x64', 'win-x64', 'win-x86']
     runs-on: ubuntu-latest
 
     steps:
