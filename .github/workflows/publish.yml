@@ -3,7 +3,7 @@ on:
   # Trigger on every tag
   push:
     tags:
-    - '*'
+    - 'v*'
 
 jobs:
   release:
