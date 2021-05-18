@@ -104,7 +104,6 @@ namespace DiscordMusicPlayer
                 await LeaveAudioChannel().ConfigureAwait(false);
             }
 
-
             // Joins the new audio channel
             m_CurrentAudioChannel = channel;
 
@@ -224,7 +223,7 @@ namespace DiscordMusicPlayer
         {
             if (m_Playlist != null)
             {
-                MusicFile musicTrack = m_Playlist.GetNextMusicFile();
+                MusicFile musicTrack = GetNextMusicFile();
 
                 if (musicTrack != null)
                     Play(musicTrack);
@@ -335,7 +334,6 @@ namespace DiscordMusicPlayer
             // Sets the highest priority for the audio thread
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-
             // Opens the output stream
             using (var output = m_AudioClient.CreatePCMStream(AudioApplication.Music, OutputFormat.SampleRate))
             {
@@ -395,17 +393,17 @@ namespace DiscordMusicPlayer
                                 // We can not control the volume with ffmpeg so we do a little trick.
                                 // The audio data is a signed 16bit little-endian stream. 
                                 // We can simply multiply the volume factor to the bit data.
-                                for (int i = 0; i < byteCount; i += 2)
+                                var len = byteCount / 2;
+                                unsafe
                                 {
-                                    // Gets the audio sound
-                                    short data = (short)(buffer[i] + buffer[i + 1] * 256);
-
-                                    // Multiply the volume
-                                    data = (short)(data * m_Volume);
-
-                                    // Write the short values back
-                                    buffer[i] = (byte)(data % 256);
-                                    buffer[i + 1] = (byte)(data / 256);
+                                    fixed(void* b = &buffer[0])
+                                    {
+                                        var data = (short*)b;
+                                        for (int i = 0; i < len; i ++)
+                                        {
+                                            data[i] = (short)(data[i] * m_Volume);
+                                        }
+                                    }
                                 }
                             }
 
@@ -493,6 +491,6 @@ namespace DiscordMusicPlayer
 #endif // USE_FFMPEG
         }
 
-#endregion Player loop
+        #endregion Player loop
     }
 }
