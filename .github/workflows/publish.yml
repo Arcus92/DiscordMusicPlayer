@@ -31,7 +31,7 @@ jobs:
 
       # Publish the .NET project
       - name: Publish release
-        run: dotnet publish -c Release -r "${{matrix.target}}" --self-contained false - o ./release
+        run: dotnet publish -c Release -r "${{matrix.target}}" --self-contained false -o ./release
 
       # Create a .tar.gz archive
       - name: Packing archive
