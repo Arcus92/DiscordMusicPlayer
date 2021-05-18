@@ -13,9 +13,9 @@ jobs:
         kind: ['linux', 'windows']
         include:
           - kind: linux
-            target: linux-x64
+            target: linux-x86
           - kind: windows
-            target: win-x64
+            target: win-x86
     runs-on: ubuntu-latest
 
     steps:
