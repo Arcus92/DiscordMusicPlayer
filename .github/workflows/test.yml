@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,12 @@ jobs:
         dotnet-version: 5.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --logger trx --results-directory "TestResults"
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: dotnet-test-results
+        path: TestResults
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
