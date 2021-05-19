@@ -18,11 +18,24 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_REF_NAME: ${{ github.ref }}
+          REPOSITORY_NAME: ${{ github.repository }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: DiscordMusicPlayer ${{ github.ref }}
+          release_name: ${REPOSITORY_NAME##*/} ${TAG_REF_NAME##*/}
           draft: false
           prerelease: false
+      
+      # Stores the release url to a file
+      - name: Store release url
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > ./release_url.txt
+
+      # Uploads the release url as artifact
+      - name: Upload release url
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: ./release_url.txt
 
   # Publish all version
   publish:
@@ -37,6 +50,23 @@ jobs:
       # Checkout the source code
       - name: Checkout
         uses: actions/checkout@v1
+
+      # Downloads the release url from artifact
+      - name: Download release url
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+
+      # Gets the release info
+      - name: Get release info
+        id: get_release_info
+        run: |
+          echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v}
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+        env:
+          TAG_REF_NAME: ${{ github.ref }}
+          REPOSITORY_NAME: ${{ github.repository }}
 
       # Setup .NET 5.0
       - name: Setup dotnet
@@ -63,7 +93,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ./release-${{ matrix.target }}.tar.gz
           asset_name: release-${{ matrix.target }}.tar.gz
           asset_content_type: application/gzip
