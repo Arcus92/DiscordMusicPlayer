@@ -18,11 +18,9 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_REF_NAME: ${{ github.ref }}
-          REPOSITORY_NAME: ${{ github.repository }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: ${REPOSITORY_NAME##*/} ${TAG_REF_NAME##*/}
+          release_name: ${{ github.repository##*/ }} ${{ github.ref##*/ }}
           draft: false
           prerelease: false
       
@@ -84,7 +82,7 @@ jobs:
 
       # Create a .tar.gz archive
       - name: Packing archive
-        run: tar czvf ./release-${{ matrix.target }}.tar.gz ./release-${{ matrix.target }}/*
+        run: tar czvf ./release-${{ matrix.target }}.tar.gz -C ./release-${{ matrix.target }}/ .
 
       # Upload the release
       - name: Upload release
@@ -95,5 +93,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ./release-${{ matrix.target }}.tar.gz
-          asset_name: release-${{ matrix.target }}.tar.gz
+          asset_name: ${{ steps.get_release_info.outputs.file_name }}-${{ matrix.target }}.tar.gz
           asset_content_type: application/gzip
