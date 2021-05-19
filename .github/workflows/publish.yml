@@ -12,6 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Gets the release info
+      - name: Get release info
+        id: get_release_info
+        run: |
+          echo ::set-output name=repository::${REPOSITORY_NAME##*/}
+          echo ::set-output name=tag::${TAG_REF_NAME##*/}
+        env:
+          TAG_REF_NAME: ${{ github.ref }}
+          REPOSITORY_NAME: ${{ github.repository }}
+
       # Create the release
       - name: Create release archive
         id: create_release
@@ -20,7 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: ${{ github.repository##*/ }} ${{ github.ref##*/ }}
+          release_name: ${{ steps.get_release_info.outputs.repository }} ${{ steps.get_release_info.outputs.tag }}
           draft: false
           prerelease: false
       
@@ -59,7 +69,7 @@ jobs:
       - name: Get release info
         id: get_release_info
         run: |
-          echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v}
+          echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/}
           value=`cat release_url/release_url.txt`
           echo ::set-output name=upload_url::$value
         env:
