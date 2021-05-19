@@ -92,7 +92,7 @@ jobs:
 
       # Create a .tar.gz archive
       - name: Packing archive
-        run: tar czvf ./release-${{ matrix.target }}.tar.gz -C ./release-${{ matrix.target }}/ .
+        run: tar -czvf ./release-${{ matrix.target }}.tar.gz -C ./release-${{ matrix.target }} .
 
       # Upload the release
       - name: Upload release
