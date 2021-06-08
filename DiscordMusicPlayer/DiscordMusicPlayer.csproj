@@ -30,13 +30,11 @@
   <PropertyGroup Condition="'$(OS)' == 'Darwin'">
     <DefineConstants>DARWIN</DefineConstants>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
-    <PackageReference Include="Discord.Net.Core" Version="2.4.0" />
     <PackageReference Include="ID3" Version="0.6.0" />
-    <PackageReference Include="Microsoft.Packaging.Tools.Trimming" Version="1.1.0-preview1-26619-01" />
-    <PackageReference Include="NAudio" Version="2.0.0" />
+    <PackageReference Include="NAudio" Version="1.10.0" />
   </ItemGroup>
 
   <ItemGroup>
