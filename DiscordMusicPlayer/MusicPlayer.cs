@@ -337,7 +337,8 @@ namespace DiscordMusicPlayer
             // Opens the output stream
             using (var output = m_AudioClient.CreatePCMStream(AudioApplication.Music, OutputFormat.SampleRate))
             {
-                int blockSize = OutputFormat.AverageBytesPerSecond / 25; // Establish the size of our AudioBuffer
+                // Changed the buffer to 1sec. It adds delay but sounds better on connections with higher ping.
+                int blockSize = OutputFormat.AverageBytesPerSecond; // Establish the size of our AudioBuffer
                 byte[] buffer = new byte[blockSize];
                 int read;
                 int byteCount;
@@ -357,7 +358,7 @@ namespace DiscordMusicPlayer
 #endif // USE_FFMPEG
                             )
                         {
-                            Thread.Sleep(10);
+                            Thread.Sleep(100);
                         }
                         else
                         {
